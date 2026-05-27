@@ -29,7 +29,7 @@ use crate::resolved::{
 use object::{
     endian::{LittleEndian, U32Bytes},
     pe,
-    write::pe::{Writer as PEWriter, *},
+    write::pe::{NtHeaders, Writer as PEWriter},
 };
 use scroll::Pwrite;
 use scroll_buffer::DynamicBuffer;
