@@ -744,7 +744,7 @@ impl TryIntoCtx<(), DynamicBuffer> for MethodSpec {
 /// a primitive native intrinsic or an array form with optional element/size metadata.
 ///
 /// ECMA-335, II.23.4.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum MarshalSpec {
     /// A non-array native type.
     Primitive(NativeIntrinsic),
@@ -767,17 +767,18 @@ impl TryFromCtx<'_> for MarshalSpec {
 
         use MarshalSpec::*;
 
-        if from[*offset] == NATIVE_TYPE_ARRAY {
-            *offset += 1;
-        } else {
-            return Ok((Primitive(from.gread(offset).map_err(dll_to_scroll)?), *offset));
+        match from.first() {
+            Some(&NATIVE_TYPE_ARRAY) => *offset += 1,
+            _ => return Ok((Primitive(from.gread(offset).map_err(dll_to_scroll)?), *offset)),
         }
 
-        let element_type = if from[*offset] == NATIVE_TYPE_MAX {
-            *offset += 1;
-            None
-        } else {
-            Some(from.gread(offset).map_err(dll_to_scroll)?)
+        let element_type = match from.get(*offset) {
+            None => None,
+            Some(&NATIVE_TYPE_MAX) => {
+                *offset += 1;
+                None
+            }
+            Some(_) => Some(from.gread(offset).map_err(dll_to_scroll)?),
         };
         let length_parameter = from.gread::<compressed::Unsigned>(offset).ok().map(|u| u.0 as usize);
         let additional_elements = from.gread::<compressed::Unsigned>(offset).ok().map(|u| u.0 as usize);
@@ -828,3 +829,27 @@ try_into_ctx!(MarshalSpec, |self, into| {
 
     Ok(*offset)
 });
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use scroll::Pread;
+
+    // A `FieldMarshal` blob of just `NATIVE_TYPE_ARRAY` (0x2a) with no
+    // trailing bytes is valid: per ECMA-335 II.23.4 the element type,
+    // ParamNum and NumElem that follow ARRAY are all optional. Parsing
+    // it must not index past the end of the blob.
+    #[test]
+    fn marshal_spec_bare_array_does_not_panic() {
+        let blob = [0x2au8]; // NATIVE_TYPE_ARRAY only
+        let spec: MarshalSpec = blob.pread(0).unwrap();
+        assert_eq!(
+            spec,
+            MarshalSpec::Array {
+                element_type: None,
+                length_parameter: None,
+                additional_elements: None,
+            }
+        );
+    }
+}

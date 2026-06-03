@@ -783,7 +783,7 @@ try_into_ctx!(RetType, |self, into| {
 /// crate during parse/write.
 ///
 /// See ECMA-335, II.23.4.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum NativeIntrinsic {
     /// `NATIVE_TYPE_BOOLEAN` (`bool`).
     Boolean,
