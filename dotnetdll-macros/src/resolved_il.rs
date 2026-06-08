@@ -235,12 +235,58 @@ pub fn r_instructions(Instructions(is): Instructions) -> TokenStream {
         quote! { #name_str => Some(#i) }
     });
 
+    // `Hash` cannot be derived because some variants hold `f32`/`f64` operands, which do not
+    // implement `Hash`. Float operands are hashed by their raw bit pattern instead.
+    let hash_field = |ty: &Type, binding: &proc_macro2::Ident| {
+        match quote! { #ty }.to_string().as_str() {
+            "f32" | "f64" => quote! { #binding.to_bits().hash(state); },
+            _ => quote! { #binding.hash(state); },
+        }
+    };
+    let hash_arms = is.iter().zip(names.iter()).map(
+        |(
+            Instruction {
+                flags, name, fields, ..
+            },
+            (flag_names, field_names),
+        )| {
+            if flags.is_empty() {
+                if fields.is_empty() {
+                    quote! { Instruction::#name => {} }
+                } else {
+                    let bindings: Vec<_> = (0..fields.len()).map(|i| format_ident!("f{}", i)).collect();
+                    let hashes = fields.iter().zip(bindings.iter()).map(|(ty, b)| hash_field(ty, b));
+                    quote! { Instruction::#name(#(#bindings),*) => { #(#hashes)* } }
+                }
+            } else {
+                let flag_hashes = flag_names.iter().map(|f| quote! { #f.hash(state); });
+                let field_hashes = fields.iter().zip(field_names.iter()).map(|(ty, b)| hash_field(ty, b));
+                quote! {
+                    Instruction::#name { #(#flag_names,)* #(#field_names),* } => {
+                        #(#flag_hashes)*
+                        #(#field_hashes)*
+                    }
+                }
+            }
+        },
+    );
+
     let variant_count = is.len();
 
     quote! {
         #[derive(Debug, Clone, PartialEq)]
         pub enum Instruction {
             #(#variants),*
+        }
+
+        impl ::std::hash::Hash for Instruction {
+            fn hash<H: ::std::hash::Hasher>(&self, state: &mut H) {
+                use ::std::hash::Hash;
+                ::std::mem::discriminant(self).hash(state);
+                match self {
+                    #(#hash_arms)*
+                }
+            }
         }
 
         impl ResolvedDebug for Instruction {
