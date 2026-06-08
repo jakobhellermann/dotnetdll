@@ -399,8 +399,7 @@ impl<'a> SecurityDeclaration<'a> {
                         parse_error(ParseError::BadStructure(
                             "null attribute type name in security declaration",
                         ))
-                    })?
-                    .into();
+                    })?;
 
                 let fields = parse_named(value, offset, &|s| {
                     resolver.find_type(s).map_err(|_| {

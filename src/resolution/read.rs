@@ -1381,9 +1381,9 @@ struct TypeSemanticsWork {
     actions: Vec<SemanticsAction>,
 }
 
-fn apply_method_semantics_for_type<'a>(
+fn apply_method_semantics_for_type(
     parent_type: usize,
-    parent: &mut types::TypeDefinition<'a>,
+    parent: &mut types::TypeDefinition<'_>,
     methods_for_type: &mut [MethodIndex],
     method_start: usize,
     actions: &[SemanticsAction],
@@ -1520,8 +1520,8 @@ fn apply_method_semantics_for_type<'a>(
     Ok(())
 }
 
-fn apply_method_semantics_work<'a>(
-    types: &mut [types::TypeDefinition<'a>],
+fn apply_method_semantics_work(
+    types: &mut [types::TypeDefinition<'_>],
     methods: &mut [MethodIndex],
     works: &[TypeSemanticsWork],
     type_base: usize,
@@ -1631,8 +1631,8 @@ fn apply_method_semantics_work<'a>(
     right_result
 }
 
-fn apply_method_semantics<'a>(
-    types: &mut [types::TypeDefinition<'a>],
+fn apply_method_semantics(
+    types: &mut [types::TypeDefinition<'_>],
     tables: &metadata::table::Tables,
     methods: &mut [MethodIndex],
     properties: &[(usize, usize)],
@@ -2356,13 +2356,10 @@ pub(crate) fn read_impl<'a>(dll: &DLL<'a>, opts: Options) -> Result<Resolution<'
                 _ => None,
             })
             .map(|marshal| {
-                let idx = match marshal.parent {
-                    HasFieldMarshal::Field(i) => i - 1,
-                    _ => {
-                        // Invariant: the iterator is filtered to `HasFieldMarshal::Field` above.
-                        debug_assert!(false, "unreachable field_marshal update with non-field parent");
-                        unreachable!()
-                    }
+                let idx = if let HasFieldMarshal::Field(i) = marshal.parent { i - 1 } else {
+                    // Invariant: the iterator is filtered to `HasFieldMarshal::Field` above.
+                    debug_assert!(false, "unreachable field_marshal update with non-field parent");
+                    unreachable!()
                 };
                 match fields.get(idx) {
                     Some(&field) => Ok((field, heap_idx!(blobs, marshal.native_type).pread::<MarshalSpec>(0)?)),
@@ -2907,7 +2904,7 @@ pub(crate) fn read_impl<'a>(dll: &DLL<'a>, opts: Options) -> Result<Resolution<'
 
                     match properties.get(p_idx) {
                         Some(&(parent, internal)) => {
-                            res.type_definitions[parent].properties[internal].attributes.push(attr)
+                            res.type_definitions[parent].properties[internal].attributes.push(attr);
                         }
                         None => {
                             dll_bail!(resolve_oob(
@@ -2923,7 +2920,7 @@ pub(crate) fn read_impl<'a>(dll: &DLL<'a>, opts: Options) -> Result<Resolution<'
 
                     match events.get(e_idx) {
                         Some(&(parent, internal)) => {
-                            res.type_definitions[parent].events[internal].attributes.push(attr)
+                            res.type_definitions[parent].events[internal].attributes.push(attr);
                         }
                         None => {
                             dll_bail!(resolve_oob(

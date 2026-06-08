@@ -11,26 +11,34 @@ pub struct Instruction {
     fields: Vec<Type>,
     skip_constructor: bool,
 }
+
+fn parse_flag(input: ParseStream) -> syn::Result<String> {
+    Ok(if input.peek(Token![type]) {
+        input.parse::<Token![type]>()?;
+        "type".to_string()
+    } else {
+        input.parse::<Ident>()?.to_string()
+    })
+}
+
+fn parse_flags_args(input: ParseStream) -> syn::Result<Vec<String>> {
+    Ok(input.parse_terminated(parse_flag, Token![,])?.into_iter().collect())
+}
+
 impl Parse for Instruction {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let mut skip_constructor = false;
         let mut flags = vec![];
         for attr in input.call(Attribute::parse_outer)? {
-            if attr.path.is_ident("flags") {
-                flags.extend(attr.parse_args_with(|i: ParseStream| {
-                    i.parse_terminated::<_, Token![,]>(|i| {
-                        Ok(if i.peek(Token![type]) {
-                            i.parse::<Token![type]>()?;
-                            "type".to_string()
-                        } else {
-                            i.parse::<Ident>()?.to_string()
-                        })
-                    })
-                })?);
-            } else if attr.path.is_ident("skip_constructor") {
+            if attr.path().is_ident("flags") {
+                flags.extend(attr.parse_args_with(parse_flags_args)?);
+            } else if attr.path().is_ident("skip_constructor") {
                 skip_constructor = true;
             } else {
-                return Err(input.error("invalid attribute (only #[flags()]/#[skip_constructor] supported)"));
+                return Err(syn::Error::new_spanned(
+                    &attr,
+                    "invalid attribute (only #[flags()]/#[skip_constructor] supported)",
+                ));
             }
         }
 
@@ -42,10 +50,7 @@ impl Parse for Instruction {
                 if input.peek(Paren) {
                     let content;
                     parenthesized!(content in input);
-                    content
-                        .parse_terminated::<_, Token![,]>(Type::parse)?
-                        .into_iter()
-                        .collect()
+                    content.parse_terminated(Type::parse, Token![,])?.into_iter().collect()
                 } else {
                     vec![]
                 }
@@ -59,7 +64,7 @@ impl Parse for Instructions {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Instructions(
             input
-                .parse_terminated::<_, Token![,]>(Instruction::parse)?
+                .parse_terminated(Instruction::parse, Token![,])?
                 .into_iter()
                 .collect(),
         ))
@@ -235,12 +240,58 @@ pub fn r_instructions(Instructions(is): Instructions) -> TokenStream {
         quote! { #name_str => Some(#i) }
     });
 
+    // `Hash` cannot be derived because some variants hold `f32`/`f64` operands, which do not
+    // implement `Hash`. Float operands are hashed by their raw bit pattern instead.
+    let hash_field = |ty: &Type, binding: &proc_macro2::Ident| {
+        match quote! { #ty }.to_string().as_str() {
+            "f32" | "f64" => quote! { #binding.to_bits().hash(state); },
+            _ => quote! { #binding.hash(state); },
+        }
+    };
+    let hash_arms = is.iter().zip(names.iter()).map(
+        |(
+            Instruction {
+                flags, name, fields, ..
+            },
+            (flag_names, field_names),
+        )| {
+            if flags.is_empty() {
+                if fields.is_empty() {
+                    quote! { Instruction::#name => {} }
+                } else {
+                    let bindings: Vec<_> = (0..fields.len()).map(|i| format_ident!("f{}", i)).collect();
+                    let hashes = fields.iter().zip(bindings.iter()).map(|(ty, b)| hash_field(ty, b));
+                    quote! { Instruction::#name(#(#bindings),*) => { #(#hashes)* } }
+                }
+            } else {
+                let flag_hashes = flag_names.iter().map(|f| quote! { #f.hash(state); });
+                let field_hashes = fields.iter().zip(field_names.iter()).map(|(ty, b)| hash_field(ty, b));
+                quote! {
+                    Instruction::#name { #(#flag_names,)* #(#field_names),* } => {
+                        #(#flag_hashes)*
+                        #(#field_hashes)*
+                    }
+                }
+            }
+        },
+    );
+
     let variant_count = is.len();
 
     quote! {
         #[derive(Debug, Clone, PartialEq)]
         pub enum Instruction {
             #(#variants),*
+        }
+
+        impl ::std::hash::Hash for Instruction {
+            fn hash<H: ::std::hash::Hasher>(&self, state: &mut H) {
+                use ::std::hash::Hash;
+                ::std::mem::discriminant(self).hash(state);
+                match self {
+                    #(#hash_arms)*
+                }
+            }
         }
 
         impl ResolvedDebug for Instruction {

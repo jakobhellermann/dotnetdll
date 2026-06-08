@@ -120,7 +120,7 @@ pub(crate) struct LazyParseState<'a> {
 /// Stores no `'a` lifetime so that `LazyParseState<'a>` stays covariant.
 pub(crate) type AttrRaw = (crate::resolved::members::UserMethod, Option<BlobIndex>);
 
-impl<'a> std::fmt::Debug for LazyParseState<'a> {
+impl std::fmt::Debug for LazyParseState<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("LazyParseState")
             .field("def_len", &self.def_len)
