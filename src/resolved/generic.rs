@@ -5,7 +5,7 @@ use std::borrow::Cow;
 /// Specifies the variance of a generic parameter.
 ///
 /// See ECMA-335, II.9.3 (page 139) for more information.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum Variance {
     /// The parameter is invariant.
     Invariant,
@@ -25,7 +25,7 @@ pub enum Variance {
 /// <https://learn.microsoft.com/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters>
 ///
 /// For the physical metadata encoding, see ECMA-335, II.22.20 (page 229).
-#[derive(Debug, Copy, Clone, Default)]
+#[derive(Debug, Copy, Clone, Default, PartialEq, Eq, Hash)]
 pub struct SpecialConstraint {
     /// If true, the parameter must be a reference type (`class` constraint in C#).
     pub reference_type: bool,

@@ -159,7 +159,7 @@ macro_rules! name_display {
     };
 }
 
-#[derive(Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, From)]
+#[derive(Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, From)]
 pub enum Accessibility {
     CompilerControlled,
     Access(super::Accessibility),
@@ -325,7 +325,7 @@ impl<'a> ExternalFieldReference<'a> {
     }
 }
 
-#[derive(Debug, Copy, Clone, From, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, From, Eq, PartialEq, Hash)]
 pub enum FieldSource {
     Definition(FieldIndex),
     Reference(FieldRefIndex),
@@ -469,7 +469,7 @@ impl<'a> Property<'a> {
     }
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum VtableLayout {
     ReuseSlot,
     NewSlot,
@@ -514,14 +514,14 @@ impl<'a> ParameterMetadata<'a> {
     }
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum BodyFormat {
     IL,
     Native,
     Runtime,
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum BodyManagement {
     Unmanaged,
     Managed,
@@ -721,7 +721,7 @@ impl<'a> Method<'a> {
     }
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum CharacterSet {
     NotSpecified,
     Ansi,
@@ -733,7 +733,7 @@ pub enum CharacterSet {
 ///
 /// See <https://learn.microsoft.com/dotnet/standard/native-interop/pinvoke> for conceptual
 /// P/Invoke guidance. See also ECMA-335, II.15.4.2.2 (page 184) for the metadata encoding.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum UnmanagedCallingConvention {
     /// Use the platform default calling convention.
     Platformapi,
@@ -748,7 +748,7 @@ pub enum UnmanagedCallingConvention {
 }
 
 /// Represents platform invoke (P/Invoke) information defined for a [`Method`](Method::pinvoke) or [`Field`](Field::pinvoke).
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct PInvoke<'a> {
     /// Specifies if the imported function should be searched for with C++ name mangling rules or not.
     pub no_mangle: bool,
@@ -884,7 +884,7 @@ impl ResolvedDebug for UserMethod {
     }
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct GenericMethodInstantiation {
     pub base: UserMethod,
     pub parameters: Vec<MethodType>,
@@ -898,7 +898,7 @@ impl GenericMethodInstantiation {
     }
 }
 
-#[derive(Debug, Clone, From, Eq, PartialEq)]
+#[derive(Debug, Clone, From, Eq, PartialEq, Hash)]
 pub enum MethodSource {
     User(#[nested(MethodIndex, MethodRefIndex)] UserMethod),
     Generic(GenericMethodInstantiation),
@@ -933,6 +933,31 @@ pub enum Constant {
     Float64(f64),
     String(Vec<u16>), // ditto
     Null,
+}
+
+// Manual impl because the float variants hold `f32`/`f64`, which do not implement `Hash`.
+// Floats are hashed by their raw bit pattern, consistent with treating distinct encodings as distinct.
+impl std::hash::Hash for Constant {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        use Constant::*;
+        std::mem::discriminant(self).hash(state);
+        match self {
+            Boolean(v) => v.hash(state),
+            Char(v) => v.hash(state),
+            Int8(v) => v.hash(state),
+            UInt8(v) => v.hash(state),
+            Int16(v) => v.hash(state),
+            UInt16(v) => v.hash(state),
+            Int32(v) => v.hash(state),
+            UInt32(v) => v.hash(state),
+            Int64(v) => v.hash(state),
+            UInt64(v) => v.hash(state),
+            Float32(v) => v.to_bits().hash(state),
+            Float64(v) => v.to_bits().hash(state),
+            String(v) => v.hash(state),
+            Null => {}
+        }
+    }
 }
 
 /// An event definition, owned by a [`TypeDefinition`](super::types::TypeDefinition)'s [`events`](super::types::TypeDefinition::events) collection.
