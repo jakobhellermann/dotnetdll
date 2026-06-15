@@ -4,19 +4,19 @@ use super::{
         heap::{BlobReader, GUIDReader, Reader, StringsReader, UserStringReader},
         metadata, method,
     },
-    resolution::{read, Resolution},
+    resolution::{Resolution, read},
 };
+use DLLError::*;
 use object::{
     endian::{LittleEndian, U32Bytes},
     pe::{self, ImageDataDirectory},
     read::{
-        pe::{PeFile32, PeFile64, SectionTable},
         Error as ObjectReadError, FileKind,
+        pe::{PeFile32, PeFile64, SectionTable},
     },
 };
 use scroll::{Error as ScrollError, Pread};
 use thiserror::Error;
-use DLLError::*;
 
 /// Represents a binary DLL file. Used for binary introspection, metadata resolution, and resolution compilation.
 #[derive(Debug)]
@@ -138,9 +138,7 @@ impl<'a> DLL<'a> {
                 blobs = Some(stream);
             } else if header.name == <GUIDReader<'a> as Reader<'a>>::NAME && guids.is_none() {
                 guids = Some(stream);
-            } else if header.name == <UserStringReader<'a> as Reader<'a>>::NAME
-                && userstrings.is_none()
-            {
+            } else if header.name == <UserStringReader<'a> as Reader<'a>>::NAME && userstrings.is_none() {
                 userstrings = Some(stream);
             } else if header.name == "#~" && logical.is_none() {
                 logical = Some(stream);

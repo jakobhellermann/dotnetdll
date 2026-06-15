@@ -6,9 +6,9 @@ use std::{
 };
 use tracing::{Event, Subscriber};
 use tracing_subscriber::{
+    Registry,
     layer::{Context, Layer},
     prelude::*,
-    Registry,
 };
 
 #[path = "../tests/common/env.rs"]

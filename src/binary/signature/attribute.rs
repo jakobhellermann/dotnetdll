@@ -2,8 +2,8 @@ use std::borrow::Cow;
 
 use super::encoded::*;
 use scroll::{
-    ctx::{TryFromCtx, TryIntoCtx},
     Pread, Pwrite,
+    ctx::{TryFromCtx, TryIntoCtx},
 };
 
 /// `SerString` payload used inside custom-attribute blobs.
@@ -480,10 +480,10 @@ mod tests {
 
     #[test]
     fn attr_args_write() -> Result<(), Box<dyn std::error::Error>> {
-        use scroll::Pwrite;
         use FixedArg::*;
         use IntegralParam::*;
         use NamedArg::*;
+        use scroll::Pwrite;
 
         const SIZE: usize = 119;
         // retrieved from ildasm

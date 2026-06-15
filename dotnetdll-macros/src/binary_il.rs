@@ -4,7 +4,7 @@ use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote};
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
-use syn::{braced, Field, Fields, Result, Token, Variant};
+use syn::{Field, Fields, Result, Token, Variant, braced};
 
 // separate prefix and normal instruction declarations
 pub struct Instructions {

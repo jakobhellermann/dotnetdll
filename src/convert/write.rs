@@ -26,7 +26,7 @@ use crate::{
     },
 };
 use paste::paste;
-use scroll::{ctx::TryIntoCtx, Pwrite};
+use scroll::{Pwrite, ctx::TryIntoCtx};
 use scroll_buffer::DynamicBuffer;
 use std::collections::HashMap;
 use std::fmt::Debug;

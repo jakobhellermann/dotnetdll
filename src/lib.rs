@@ -278,9 +278,10 @@ pub mod resolved;
 pub mod prelude {
     pub use crate::{
         access, asm,
-        dll::{DLLError, DLL},
+        dll::{DLL, DLLError},
         resolution::{read::Options as ReadOptions, utils::*, write::Options as WriteOptions, *},
         resolved::{
+            Accessibility, ResolvedDebug,
             assembly::*,
             attribute::*,
             body, generic,
@@ -290,7 +291,6 @@ pub mod prelude {
             resource,
             signature::*,
             types::{Accessibility as TypeAccessibility, *},
-            Accessibility, ResolvedDebug,
         },
     };
 }

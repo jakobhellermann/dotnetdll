@@ -142,6 +142,7 @@ pub use dotnetdll_macros::ctype;
 /// a name programmatically while keeping the same escaping/formatting rules.
 pub use dotnetdll_macros::type_name;
 
+use dotnetdll_macros::From;
 /// Construct an [`ExternalTypeReference`] using ILAsm-style syntax.
 ///
 /// ```rust
@@ -153,14 +154,14 @@ pub use dotnetdll_macros::type_name;
 /// # let _ = object;
 /// ```
 pub use dotnetdll_macros::type_ref;
-use dotnetdll_macros::From;
 
 use crate::{binary::signature::encoded::ArrayShape, convert::TypeKind, prelude::MaybeUnmanagedMethod, resolution::*};
 
 use super::{
+    ResolvedDebug,
     attribute::{Attribute, SecurityDeclaration},
-    generic::{show_constraints, Type},
-    members, ResolvedDebug,
+    generic::{Type, show_constraints},
+    members,
 };
 
 /// Specifies whether a type is a class or an interface.
@@ -877,8 +878,8 @@ pub enum BaseType<EnclosingType> {
 }
 impl<T: ResolvedDebug> ResolvedDebug for BaseType<T> {
     fn show(&self, res: &Resolution) -> String {
-        use BaseType::*;
         use super::signature::StandAloneCallingConvention::*;
+        use BaseType::*;
         match self {
             Type {
                 value_kind: value_type,

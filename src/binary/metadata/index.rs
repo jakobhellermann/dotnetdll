@@ -3,8 +3,8 @@ use bitvec::access::BitSafeU8;
 use bitvec::slice::BitSlice;
 use num_traits::{FromPrimitive, ToPrimitive};
 use scroll::{
-    ctx::{TryFromCtx, TryIntoCtx},
     Pread, Pwrite,
+    ctx::{TryFromCtx, TryIntoCtx},
 };
 use std::{cmp::Ordering, marker::PhantomData};
 

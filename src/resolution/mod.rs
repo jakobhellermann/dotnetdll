@@ -163,9 +163,10 @@ impl<'a> Resolution<'a> {
     pub fn method_body(&self, idx: MethodIndex) -> Result<&body::Method> {
         if let Some(state) = &self.lazy_state {
             if state.lazy_bodies {
-                let def_idx = state.method_idx_to_def.get(&idx).ok_or(
-                    crate::dll::DLLError::Other("method has no body (abstract or rva == 0)"),
-                )?;
+                let def_idx = state
+                    .method_idx_to_def
+                    .get(&idx)
+                    .ok_or(crate::dll::DLLError::Other("method has no body (abstract or rva == 0)"))?;
                 return state.decode_body(*def_idx);
             }
         }
@@ -264,9 +265,7 @@ impl<'a> Resolution<'a> {
                     .attr_method_idx_to_def
                     .get(&idx)
                     .copied()
-                    .ok_or(crate::dll::DLLError::Other(
-                        "method index not found in attr map",
-                    ))?;
+                    .ok_or(crate::dll::DLLError::Other("method index not found in attr map"))?;
                 return state.method_attributes(def_idx);
             }
         }
@@ -290,9 +289,7 @@ impl<'a> Resolution<'a> {
                     .attr_field_idx_to_def
                     .get(&idx)
                     .copied()
-                    .ok_or(crate::dll::DLLError::Other(
-                        "field index not found in attr map",
-                    ))?;
+                    .ok_or(crate::dll::DLLError::Other("field index not found in attr map"))?;
                 return state.field_attributes(def_idx);
             }
         }
@@ -307,9 +304,7 @@ impl<'a> Resolution<'a> {
     /// In **lazy mode** constructor/blob-index pairs are cached on the first call; blob bytes are
     /// re-read on each call. Returns an empty `Vec` when the module has no assembly entry.
     /// See [`Resolution::type_attributes`] for the full contract.
-    pub fn assembly_attributes(
-        &self,
-    ) -> crate::dll::Result<Vec<crate::resolved::attribute::Attribute<'_>>> {
+    pub fn assembly_attributes(&self) -> crate::dll::Result<Vec<crate::resolved::attribute::Attribute<'_>>> {
         if let Some(state) = &self.lazy_state {
             if state.lazy_attributes {
                 return state.assembly_attributes();
@@ -730,15 +725,17 @@ mod lazy_attribute_tests {
     use super::*;
     use crate::prelude::ReadOptions;
 
-    static OOP_DLL: &[u8] =
-        include_bytes!("../../examples/smolasm/oop.dll");
+    static OOP_DLL: &[u8] = include_bytes!("../../examples/smolasm/oop.dll");
 
     #[test]
     fn lazy_attrs_match_eager_for_types() {
         let eager = Resolution::parse(OOP_DLL, ReadOptions::default()).unwrap();
         let lazy = Resolution::parse(
             OOP_DLL,
-            ReadOptions { lazy_attributes: true, ..Default::default() },
+            ReadOptions {
+                lazy_attributes: true,
+                ..Default::default()
+            },
         )
         .unwrap();
 
@@ -770,7 +767,10 @@ mod lazy_attribute_tests {
         let eager = Resolution::parse(OOP_DLL, ReadOptions::default()).unwrap();
         let lazy = Resolution::parse(
             OOP_DLL,
-            ReadOptions { lazy_attributes: true, ..Default::default() },
+            ReadOptions {
+                lazy_attributes: true,
+                ..Default::default()
+            },
         )
         .unwrap();
 

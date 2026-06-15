@@ -252,24 +252,15 @@ impl<'a> LazyParseState<'a> {
             .collect()
     }
 
-    pub fn type_attributes(
-        &self,
-        type_def_idx: usize,
-    ) -> Result<Vec<crate::resolved::attribute::Attribute<'a>>> {
+    pub fn type_attributes(&self, type_def_idx: usize) -> Result<Vec<crate::resolved::attribute::Attribute<'a>>> {
         self.raw_to_attrs(self.attr_by_type.get(&type_def_idx).map_or(&[], Vec::as_slice))
     }
 
-    pub fn method_attributes(
-        &self,
-        method_def_idx: usize,
-    ) -> Result<Vec<crate::resolved::attribute::Attribute<'a>>> {
+    pub fn method_attributes(&self, method_def_idx: usize) -> Result<Vec<crate::resolved::attribute::Attribute<'a>>> {
         self.raw_to_attrs(self.attr_by_method.get(&method_def_idx).map_or(&[], Vec::as_slice))
     }
 
-    pub fn field_attributes(
-        &self,
-        field_def_idx: usize,
-    ) -> Result<Vec<crate::resolved::attribute::Attribute<'a>>> {
+    pub fn field_attributes(&self, field_def_idx: usize) -> Result<Vec<crate::resolved::attribute::Attribute<'a>>> {
         self.raw_to_attrs(self.attr_by_field.get(&field_def_idx).map_or(&[], Vec::as_slice))
     }
 
@@ -334,9 +325,7 @@ pub(crate) fn decode_body_with_ctx(
                 vec![]
             } else {
                 let tok: Token = local_var_sig_tok.to_le_bytes().pread(0).map_err(CLI)?;
-                if matches!(tok.target, TokenTarget::Table(Kind::StandAloneSig))
-                    && tok.index <= ctx.sigs.len()
-                {
+                if matches!(tok.target, TokenTarget::Table(Kind::StandAloneSig)) && tok.index <= ctx.sigs.len() {
                     let vars: LocalVarSig = ctx
                         .blobs
                         .at_index(ctx.sigs[tok.index - 1].signature)?
@@ -400,15 +389,12 @@ pub(crate) fn decode_body_with_ctx(
             if $byte as usize == max + 1 {
                 instr_offsets.len()
             } else {
-                instr_offsets
-                    .iter()
-                    .position(|&i| i == $byte as usize)
-                    .ok_or_else(|| {
-                        CLI(scroll::Error::Custom(format!(
-                            "could not find corresponding instruction for {} offset {}",
-                            $name, $byte
-                        )))
-                    })?
+                instr_offsets.iter().position(|&i| i == $byte as usize).ok_or_else(|| {
+                    CLI(scroll::Error::Custom(format!(
+                        "could not find corresponding instruction for {} offset {}",
+                        $name, $byte
+                    )))
+                })?
             }
         }};
     }
@@ -422,10 +408,7 @@ pub(crate) fn decode_body_with_ctx(
                 for h in e {
                     let kind = match h.flags {
                         0 => body::ExceptionKind::TypedException(convert::read::type_token(
-                            h.class_token_or_filter
-                                .to_le_bytes()
-                                .pread::<Token>(0)
-                                .map_err(CLI)?,
+                            h.class_token_or_filter.to_le_bytes().pread::<Token>(0).map_err(CLI)?,
                             ctx,
                         )?),
                         1 => body::ExceptionKind::Filter {
@@ -437,7 +420,7 @@ pub(crate) fn decode_body_with_ctx(
                             return Err(CLI(scroll::Error::Custom(format!(
                                 "invalid exception clause type {:#06x}",
                                 bad
-                            ))))
+                            ))));
                         }
                     };
 
@@ -449,8 +432,7 @@ pub(crate) fn decode_body_with_ctx(
                         try_offset,
                         try_length: get_offset!(h.try_offset + h.try_length, "try") - try_offset,
                         handler_offset,
-                        handler_length: get_offset!(h.handler_offset + h.handler_length, "handler")
-                            - handler_offset,
+                        handler_length: get_offset!(h.handler_offset + h.handler_length, "handler") - handler_offset,
                     });
                 }
                 body::DataSection::ExceptionHandlers(exceptions)

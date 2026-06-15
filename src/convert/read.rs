@@ -16,8 +16,8 @@ use crate::{
     resolution::*,
     resolved::{self, members::*, signature, types::*},
 };
-use scroll::Pread;
 use rustc_hash::FxHashMap as HashMap;
+use scroll::Pread;
 
 macro_rules! throw {
     ($($arg:tt)*) => {

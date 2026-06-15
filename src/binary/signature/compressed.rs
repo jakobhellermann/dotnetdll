@@ -1,7 +1,7 @@
 use bitvec::{order::Lsb0, view::BitView};
 use scroll::{
-    ctx::{TryFromCtx, TryIntoCtx},
     Pread, Pwrite,
+    ctx::{TryFromCtx, TryIntoCtx},
 };
 
 /// A compressed unsigned integer used in signature and metadata blob encodings.

@@ -1,6 +1,6 @@
 use super::{metadata::index, signature::compressed};
 use crate::utils::hash;
-use scroll::{ctx::StrCtx, Pread, Pwrite, Result};
+use scroll::{Pread, Pwrite, Result, ctx::StrCtx};
 use std::collections::HashMap;
 
 // TODO: seal these traits
