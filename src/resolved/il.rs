@@ -153,7 +153,7 @@ use num_derive::FromPrimitive;
 /// This affects comparisons/branches (`cgt` vs `cgt.un`, `bge` vs `bge.un`), some integer
 /// arithmetic (`div`/`rem`), and right shift behavior (`shr` sign-extension vs `shr.un`
 /// zero-fill). (ECMA-335, III.3.9; ECMA-335, III.3.23; ECMA-335, III.3.60)
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum NumberSign {
     /// Use the signed/default opcode semantics.
     Signed,
@@ -180,7 +180,7 @@ pub enum OverflowDetection {
 /// `conv.ovf.<to type>.un`. Floating-point conversions use dedicated instructions in
 /// [`Instruction`] (`ConvertFloat32`, `ConvertFloat64`, `ConvertUnsignedToFloat`).
 /// (ECMA-335, III.3.27; ECMA-335, III.3.28; ECMA-335, III.3.29)
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum ConversionType {
     /// `conv.i1`
     Int8,
@@ -207,7 +207,7 @@ pub enum ConversionType {
 /// Alignment hint value for the `unaligned.` instruction prefix.
 ///
 /// The encoded alignment operand is limited to 1, 2, or 4 bytes. (ECMA-335, III.2.5)
-#[derive(Debug, Copy, Clone, FromPrimitive, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, FromPrimitive, Eq, PartialEq, Hash)]
 pub enum Alignment {
     /// 1-byte alignment (`unaligned. 1`).
     Byte = 1,
@@ -221,7 +221,7 @@ pub enum Alignment {
 ///
 /// Used by `ldind.*` and `ldelem.*` instruction families. (ECMA-335, III.3.42; ECMA-335,
 /// III.4.8)
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum LoadType {
     /// `*.i1`
     Int8,
@@ -251,7 +251,7 @@ pub enum LoadType {
 ///
 /// Used by `stind.*` and `stelem.*` instruction families. (ECMA-335, III.3.62; ECMA-335,
 /// III.4.27)
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum StoreType {
     /// `*.i1`
     Int8,
