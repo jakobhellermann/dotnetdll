@@ -18,7 +18,7 @@ pub mod types;
 ///
 /// For top-level type visibility (`public` vs. `not public`), see
 /// [`crate::resolved::types::Accessibility`].
-#[derive(Debug, Ord, PartialOrd, Eq, PartialEq, Copy, Clone)]
+#[derive(Debug, Ord, PartialOrd, Eq, PartialEq, Hash, Copy, Clone)]
 pub enum Accessibility {
     /// Accessible only within the declaring type (`private`).
     Private,
