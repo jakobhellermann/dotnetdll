@@ -14,7 +14,7 @@ use scroll_buffer::DynamicBuffer;
 /// ECMA-335, II.23.2.1.
 ///
 /// Re-exported for the semantic layer as [`crate::resolved::signature::CallingConvention`].
-#[derive(Debug, Eq, PartialEq, Copy, Clone)]
+#[derive(Debug, Eq, PartialEq, Copy, Clone, Hash)]
 pub enum CallingConvention {
     /// Default managed calling convention (`0x0`).
     Default,

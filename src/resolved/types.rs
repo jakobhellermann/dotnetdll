@@ -164,7 +164,7 @@ use super::{
 };
 
 /// Specifies whether a type is a class or an interface.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum Kind {
     /// A regular class or value type.
     Class,
@@ -173,7 +173,7 @@ pub enum Kind {
 }
 
 /// Specifies the visibility of a type.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum Accessibility {
     /// The type is only visible within its own assembly.
     NotPublic,
@@ -184,20 +184,20 @@ pub enum Accessibility {
 }
 
 /// Specifies the layout of a type's fields in memory.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct SequentialLayout {
     pub packing_size: usize,
     pub class_size: usize,
 }
 
 /// Specifies the explicit layout of a type's fields in memory.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct ExplicitLayout {
     pub class_size: usize,
 }
 
 /// Specifies how the fields of a type are laid out in memory.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum Layout {
     /// The runtime automatically determines the layout.
     Automatic,
@@ -208,7 +208,7 @@ pub enum Layout {
 }
 
 /// Specifies the string formatting for P/Invoke calls.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum StringFormatting {
     /// ANSI string formatting.
     ANSI,
@@ -237,7 +237,7 @@ pub struct MethodOverride {
 ///
 /// For the physical metadata encoding, see the `Flags` column of the
 /// [`crate::binary::metadata::table::TypeDef`] row (`ECMA-335, II.22.37`).
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct TypeFlags {
     /// Visibility of the type.
     pub accessibility: Accessibility,
