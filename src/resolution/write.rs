@@ -1030,7 +1030,7 @@ pub(crate) fn write_impl(res: &Resolution, opts: Options) -> Result<Vec<u8>> {
                 n_short += 1;
             }
         }
-        for (offset, delta) in offsets.iter_mut().zip(deltas.into_iter()) {
+        for (offset, delta) in offsets.iter_mut().zip(deltas) {
             *offset -= delta;
         }
 

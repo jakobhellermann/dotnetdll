@@ -406,10 +406,10 @@ impl<'a> DLL<'a> {
     /// Used by the lazy-decode path to defer `binary::method::Method` parsing until first access.
     pub(crate) fn method_bytes(&self, def: &metadata::table::MethodDef) -> Result<(&'a [u8], usize)> {
         let bytes = self.raw_rva(def.rva)?;
-        let offset = if !check_bitmask!(bytes[0], 0x2) {
-            4 - (def.rva as usize % 4)
-        } else {
+        let offset = if check_bitmask!(bytes[0], 0x2) {
             0
+        } else {
+            4 - (def.rva as usize % 4)
         };
         Ok((bytes, offset))
     }
