@@ -1,6 +1,7 @@
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{Data, DeriveInput, Fields, Meta, NestedMeta};
+use syn::punctuated::Punctuated;
+use syn::{Data, DeriveInput, Fields, Path, Token};
 
 pub fn derive_from(input: DeriveInput) -> TokenStream {
     let type_name = input.ident;
@@ -20,22 +21,17 @@ pub fn derive_from(input: DeriveInput) -> TokenStream {
             _ => return None,
         };
         let mut nested = vec![];
-        for a in attrs {
-            match a.parse_meta() {
-                Ok(Meta::List(l)) if l.path.is_ident("nested") => {
-                    for variant in l.nested {
-                        if let NestedMeta::Meta(m) = variant {
-                            nested.push(quote! {
-                                impl #generics From<#m> for #type_name #generics {
-                                    fn from(m: #m) -> Self {
-                                        Self::#name(m.into())
-                                    }
-                                }
-                            });
+        for a in attrs.iter().filter(|a| a.path().is_ident("nested")) {
+            if let Ok(paths) = a.parse_args_with(Punctuated::<Path, Token![,]>::parse_terminated) {
+                for path in paths {
+                    nested.push(quote! {
+                        impl #generics From<#path> for #type_name #generics {
+                            fn from(m: #path) -> Self {
+                                Self::#name(m.into())
+                            }
                         }
-                    }
+                    });
                 }
-                _ => {}
             }
         }
         Some(quote! {
