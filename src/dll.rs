@@ -408,10 +408,10 @@ impl<'a> DLL<'a> {
     /// (including truncation errors) remain deferred until body access.
     pub(crate) fn method_range(&self, def: &metadata::table::MethodDef) -> Result<(std::ops::Range<usize>, usize)> {
         let bytes = self.raw_rva(def.rva)?;
-        let offset = if !check_bitmask!(bytes[0], 0x2) {
-            4 - (def.rva as usize % 4)
-        } else {
+        let offset = if check_bitmask!(bytes[0], 0x2) {
             0
+        } else {
+            4 - (def.rva as usize % 4)
         };
         // raw_rva returns a subslice of self.buffer. Address arithmetic only computes
         // indices; no pointer is reconstructed and no provenance is discarded on access.

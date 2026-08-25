@@ -284,7 +284,7 @@ impl TryIntoCtx<(), DynamicBuffer> for DataSection {
 
                 let should_be_fat = es.len() > (u8::MAX as usize - 4) / 12
                     || !es.iter().all(|e| {
-                        e.flags <= u16::MAX as u32
+                        u16::try_from(e.flags).is_ok()
                             && e.try_length < 256
                             && e.handler_length < 256
                             && e.try_offset < 65536

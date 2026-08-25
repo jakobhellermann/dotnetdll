@@ -392,15 +392,11 @@ impl<'a> SecurityDeclaration<'a> {
 
         (0..num_attributes)
             .map(|_| {
-                let type_name = value
-                    .gread::<SerString>(offset)?
-                    .0
-                    .ok_or_else(|| {
-                        parse_error(ParseError::BadStructure(
-                            "null attribute type name in security declaration",
-                        ))
-                    })?
-                    .into();
+                let type_name = value.gread::<SerString>(offset)?.0.ok_or_else(|| {
+                    parse_error(ParseError::BadStructure(
+                        "null attribute type name in security declaration",
+                    ))
+                })?;
 
                 let fields = parse_named(value, offset, &|s| {
                     resolver.find_type(s).map_err(|_| {
