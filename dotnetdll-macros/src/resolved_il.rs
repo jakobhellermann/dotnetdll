@@ -35,7 +35,10 @@ impl Parse for Instruction {
             } else if attr.path().is_ident("skip_constructor") {
                 skip_constructor = true;
             } else {
-                return Err(input.error("invalid attribute (only #[flags()]/#[skip_constructor] supported)"));
+                return Err(syn::Error::new_spanned(
+                    &attr,
+                    "invalid attribute (only #[flags()]/#[skip_constructor] supported)",
+                ));
             }
         }
 
